@@ -81,6 +81,8 @@ const inputClosePin = document.querySelector('.form__input--pin');
 // Functions
 
 const displayMovements = function (movements) {
+  containerMovements.innerHTML = '';
+
   movements.forEach(function (mov, i) {
     const type = mov > 0 ? 'deposit' : 'withdrawal';
 
@@ -97,7 +99,29 @@ const displayMovements = function (movements) {
 };
 
 displayMovements(account1.movements);
-let currentAccount;
+
+const user = 'Niksa Nisavic';
+
+const createUsername = function (acc) {
+  acc.forEach(acc => {
+    acc.username = acc.owner
+      .toLowerCase()
+      .split(' ')
+      .map(name => name[0])
+      .join('');
+  });
+};
+
+createUsername(accounts);
+console.log(accounts);
+
+const withdrawal = account1.movements.filter(mov => {
+  return mov < 0;
+});
+
+console.log(account1.movements);
+console.log(withdrawal);
+// let currentAccount;
 
 // btnLogin.addEventListener('click', function (e) {
 //   // Prevent form from submitting
