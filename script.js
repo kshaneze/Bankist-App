@@ -93,7 +93,7 @@ const displayMovements = function (movements, sorted = false) {
       i + 1
     } ${type}</div>
       <div class="movements__date">3 days ago</div>
-      <div class="movements__value">${mov}€</div>
+      <div class="movements__value">${mov.toFixed(2)}€</div>
     </div>`;
 
     containerMovements.insertAdjacentHTML('afterbegin', html);
@@ -119,7 +119,7 @@ const calcDisplayBalance = function (acc) {
     return accumulator + current;
   }, 0);
 
-  labelBalance.textContent = `${acc.balance} €`;
+  labelBalance.textContent = `${acc.balance.toFixed(2)} €`;
 };
 
 const calcDisplaySummary = function (acc) {
@@ -127,13 +127,13 @@ const calcDisplaySummary = function (acc) {
     .filter(mov => mov > 0)
     .reduce((acc, cur) => acc + cur);
 
-  labelSumIn.textContent = `${income} €`;
+  labelSumIn.textContent = `${income.toFixed(2)} €`;
 
   const outcome = acc.movements
     .filter(mov => mov < 0)
     .reduce((acc, curr) => acc + curr);
 
-  labelSumOut.textContent = `${Math.abs(outcome)} €`;
+  labelSumOut.textContent = `${Math.abs(outcome).toFixed(2)} €`;
 
   const interest = acc.movements
     .filter(mov => mov > 0)
@@ -141,7 +141,7 @@ const calcDisplaySummary = function (acc) {
     .filter(int => int >= 1)
     .reduce((acc, int) => acc + int);
 
-  labelSumInterest.textContent = `${interest} €`;
+  labelSumInterest.textContent = `${interest.toFixed(2)} €`;
 };
 
 const displayUI = function (acc) {
@@ -154,6 +154,16 @@ const displayUI = function (acc) {
   // Display balance
   calcDisplayBalance(acc);
 };
+
+const now = new Date();
+
+const day = `${now.getDate()}`.padStart(2, 0);
+const month = `${now.getMonth() + 1}`.padStart(2, 0);
+const year = now.getFullYear();
+const hours = `${now.getHours()}`.padStart(2, 0);
+const minutes = `${now.getMinutes()}`.padStart(2, 0);
+
+labelDate.textContent = `${day}/${month}/${year}, ${hours}:${minutes}`;
 
 let currentAccount;
 btnLogin.addEventListener('click', function (e) {
@@ -206,7 +216,8 @@ btnTransfer.addEventListener('click', function (e) {
 btnLoan.addEventListener('click', function (e) {
   e.preventDefault();
 
-  const amount = Number(inputLoanAmount.value);
+  // Math.floor to round and decimal numbers,
+  const amount = Math.floor(inputLoanAmount.value);
 
   if (amount > 0 && currentAccount.movements.some(mov => mov >= amount * 0.1)) {
     setTimeout(() => {
@@ -240,12 +251,14 @@ btnClose.addEventListener('click', function (e) {
   inputCloseUsername.value = inputClosePin.value = '';
 });
 
+// Not sorted
 let sorted = false;
 
 btnSort.addEventListener('click', function (e) {
   e.preventDefault();
-
+  // If Current account is displayed by default it is not sorted, so it is true
   displayMovements(currentAccount.movements, !sorted);
 
+  // Back to normal
   sorted = !sorted;
 });
