@@ -80,6 +80,25 @@ const inputClosePin = document.querySelector('.form__input--pin');
 /////////////////////////////////////////////////
 // Functions
 
+const updateMovementDates = function (date, local) {
+  const calcDaysPassed = (date1, date2) =>
+    Math.round(Math.abs(date2 - date1) / (1000 * 60 * 60 * 24));
+
+  const daysPassed = calcDaysPassed(new Date(), date);
+
+  if (daysPassed === 0) return 'Today';
+  if (daysPassed === 1) return 'Yesterday';
+  if (daysPassed <= 7) return `${daysPassed} days ago`;
+  else {
+    // const day = `${date.getDate()}`.padStart(2, 0);
+    // const month = `${date.getMonth() + 1}`.padStart(2, 0);
+    // const year = date.getFullYear();
+    // return `${day}/${month}/${year}`;
+
+    return new Intl.DateTimeFormat(local).format(date);
+  }
+};
+
 const displayMovements = function (acc, sorted = false) {
   containerMovements.innerHTML = '';
 
@@ -92,11 +111,7 @@ const displayMovements = function (acc, sorted = false) {
 
     const dates = new Date(acc.movementsDates[i]);
 
-    const day = `${dates.getDate()}`.padStart(2, 0);
-    const month = `${dates.getMonth() + 1}`.padStart(2, 0);
-    const year = dates.getFullYear();
-
-    const displayDate = `${day}/${month}/${year}`;
+    const displayDate = updateMovementDates(dates, acc.local);
 
     const html = `<div class="movements__row">
       <div class="movements__type movements__type--${type}">${
@@ -170,13 +185,15 @@ btnLogin.addEventListener('click', function (e) {
 
   const now = new Date();
 
-  const day = `${now.getDate()}`.padStart(2, 0);
-  const month = `${now.getMonth() + 1}`.padStart(2, 0);
-  const year = now.getFullYear();
-  const hours = `${now.getHours()}`.padStart(2, 0);
-  const minutes = `${now.getMinutes()}`.padStart(2, 0);
-
-  labelDate.textContent = `${day}/${month}/${year}, ${hours}:${minutes}`;
+  const local = navigator.language;
+  const options = {
+    day: 'numeric',
+    month: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: 'numeric',
+  };
+  labelDate.textContent = new Intl.DateTimeFormat(local, options).format(now);
 
   currentAccount = accounts.find(
     acc => acc.username === inputLoginUsername.value
