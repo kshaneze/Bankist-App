@@ -99,6 +99,14 @@ const updateMovementDates = function (date, local) {
   }
 };
 
+const formatCurrency = function (value, currency, locale) {
+  return new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency: currency,
+  }).format(value);
+};
+
+//
 const displayMovements = function (acc, sorted = false) {
   containerMovements.innerHTML = '';
 
@@ -110,15 +118,16 @@ const displayMovements = function (acc, sorted = false) {
     const type = mov > 0 ? 'deposit' : 'withdrawal';
 
     const dates = new Date(acc.movementsDates[i]);
+    const displayDate = updateMovementDates(dates, acc.locale);
 
-    const displayDate = updateMovementDates(dates, acc.local);
+    const formatedMov = formatCurrency(mov, acc.currency, acc.locale);
 
     const html = `<div class="movements__row">
       <div class="movements__type movements__type--${type}">${
       i + 1
     } ${type}</div>
       <div class="movements__date">${displayDate}</div>
-      <div class="movements__value">${mov.toFixed(2)}€</div>
+      <div class="movements__value">${formatedMov}</div>
     </div>`;
 
     containerMovements.insertAdjacentHTML('afterbegin', html);
@@ -142,7 +151,11 @@ const calcDisplayBalance = function (acc) {
     return accumulator + current;
   }, 0);
 
-  labelBalance.textContent = `${acc.balance.toFixed(2)} €`;
+  labelBalance.textContent = formatCurrency(
+    acc.balance,
+    acc.currency,
+    acc.locale
+  );
 };
 
 const calcDisplaySummary = function (acc) {
@@ -150,13 +163,17 @@ const calcDisplaySummary = function (acc) {
     .filter(mov => mov > 0)
     .reduce((acc, cur) => acc + cur);
 
-  labelSumIn.textContent = `${income.toFixed(2)} €`;
+  labelSumIn.textContent = formatCurrency(income, acc.currency, acc.locale);
 
   const outcome = acc.movements
     .filter(mov => mov < 0)
     .reduce((acc, curr) => acc + curr);
 
-  labelSumOut.textContent = `${Math.abs(outcome).toFixed(2)} €`;
+  labelSumOut.textContent = formatCurrency(
+    Math.abs(outcome),
+    acc.currency,
+    acc.locale
+  );
 
   const interest = acc.movements
     .filter(mov => mov > 0)
@@ -164,7 +181,11 @@ const calcDisplaySummary = function (acc) {
     .filter(int => int >= 1)
     .reduce((acc, int) => acc + int);
 
-  labelSumInterest.textContent = `${interest.toFixed(2)} €`;
+  labelSumInterest.textContent = formatCurrency(
+    interest,
+    acc.currency,
+    acc.locale
+  );
 };
 
 const displayUI = function (acc) {
@@ -176,6 +197,20 @@ const displayUI = function (acc) {
 
   // Display balance
   calcDisplayBalance(acc);
+};
+
+const startLogOutTimer = function () {
+  let time = 80;
+
+  const min = String(Math.trunc(time / 60)).padStart(2, 0);
+  const seconds = time % 60;
+
+  setInterval(function () {
+    labelTimer.textContent = `${min}:${seconds}`;
+
+    // Decrease 1s
+    time--;
+  }, 1000);
 };
 
 let currentAccount;
@@ -210,6 +245,8 @@ btnLogin.addEventListener('click', function (e) {
     // Clear input fields
     inputLoginUsername.value = inputLoginPin.value = '';
     inputLoginPin.blur();
+
+    startLogOutTimer();
 
     displayUI(currentAccount);
   }
