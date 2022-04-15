@@ -200,20 +200,30 @@ const displayUI = function (acc) {
 };
 
 const startLogOutTimer = function () {
-  let time = 80;
+  const tick = function () {
+    const min = String(Math.trunc(time / 60)).padStart(2, 0);
+    const seconds = String(time % 60).padStart(2, 0);
 
-  const min = String(Math.trunc(time / 60)).padStart(2, 0);
-  const seconds = time % 60;
-
-  setInterval(function () {
     labelTimer.textContent = `${min}:${seconds}`;
 
+    if (time === 0) {
+      clearInterval(timer);
+      labelWelcome.textContent = 'Log in to get started';
+      containerApp.style.opacity = 0;
+    }
     // Decrease 1s
     time--;
-  }, 1000);
+  };
+
+  let time = 120;
+
+  tick();
+  const timer = setInterval(tick, 1000);
+
+  return timer;
 };
 
-let currentAccount;
+let currentAccount, timer;
 btnLogin.addEventListener('click', function (e) {
   // Prevent form from submitting
   e.preventDefault();
@@ -246,7 +256,8 @@ btnLogin.addEventListener('click', function (e) {
     inputLoginUsername.value = inputLoginPin.value = '';
     inputLoginPin.blur();
 
-    startLogOutTimer();
+    if (timer) clearInterval(timer);
+    timer = startLogOutTimer();
 
     displayUI(currentAccount);
   }
@@ -277,6 +288,9 @@ btnTransfer.addEventListener('click', function (e) {
     receiverAcc.movementsDates.push(now);
 
     displayUI(currentAccount);
+
+    clearInterval(timer);
+    startLogOutTimer();
   }
 });
 
@@ -295,6 +309,10 @@ btnLoan.addEventListener('click', function (e) {
       currentAccount.movementsDates.push(now);
 
       displayUI(currentAccount);
+
+      // Reset Timer
+      clearInterval(timer);
+      startLogOutTimer();
     }, 2000);
   }
 
